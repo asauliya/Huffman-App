@@ -38,8 +38,8 @@ private:
         }
     }
     void saveDecompresssedFile(ifstream &input, string filename, Node *Root, long long int Total_Freq)
-    {
-        ofstream output((filename.erase(filename.size() - 4)).c_str(), ios::binary);
+    {   
+        ofstream output((filename.erase(filename.size() - 4)+".txt").c_str(), ios::binary);
         if (!output.good())
         {
             perror("Error:\t");
@@ -123,13 +123,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    cout << "\nCompressing the file.....";
+    cout << "\nDecompressing the file.....";
     clock_t start_time = clock();
 
     huffman f(argv[1]);
     f.decompress();
 
     clock_t stop_time = clock();
-    cout << "\n\n*********************************************File Compressed Successfully! :-)*********************************************\n\n";
+    cout << "\n\n*********************************************File Decompressed Successfully! :-)*********************************************\n\n";
     cout << "Time taken to Compress:\t" << double(stop_time - start_time) / CLOCKS_PER_SEC << " seconds\n\n";
 }

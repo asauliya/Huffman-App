@@ -54,8 +54,9 @@ const FileForm2 = () => {
       const downloadLink = document.createElement("a");
       downloadLink.href = URL.createObjectURL(blob);
       if(mode == 'encoder'){
+        const newFilename = file.name.replace(/\.txt$/, ".huf");
         console.log("downloading encoded file")
-        downloadLink.download = `${file.name}.huf`; // Ensure proper file name
+        downloadLink.download = `${newFilename}`; // Ensure proper file name
       }
       else{
         const newFilename = file.name.replace(/\.huf$/, "");

@@ -184,7 +184,7 @@ public:
             exit(-1);
         }
 
-        ofstream output_file((inFileName + ".huf").c_str(), ios::binary);
+        ofstream output_file((inFileName.erase(inFileName.size() - 4)+".huf").c_str(), ios::binary);
         if (!output_file.good())
         {
             perror("Error:\t");

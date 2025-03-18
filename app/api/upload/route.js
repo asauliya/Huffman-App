@@ -38,7 +38,7 @@ export async function POST(req) {
         });
       });
 
-      const newFilename = file.name.replace(/\.huf$/, "");
+      const newFilename = file.name.replace(/\.huf$/, ".txt");
       return NextResponse.json({
         message: "File Decoded successfully!",
         downloadUrl: `/uploads/${newFilename}`,
@@ -55,10 +55,11 @@ export async function POST(req) {
       });
     });
 
+    const newFilename = file.name.replace(/\.txt$/, ".huf");
     // Return the processed file URL
     return NextResponse.json({
       message: "File processed successfully!",
-      downloadUrl: `/uploads/${file.name}.huf`,
+      downloadUrl: `/uploads/${newFilename}`,
     });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
