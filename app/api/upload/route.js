@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
-import { writeFile, readFile } from "fs/promises";
+import { writeFile } from "fs/promises";
 import path from "path";
 import { spawn } from "child_process";
 
+let progress = 0;
+let statusText = "Starting...";
+let downloadUrl = "";
+
 export async function POST(req) {
   try {
-    // Get the uploaded file
     const formData = await req.formData();
     const mode = formData.get("mode");
     const file = formData.get("file");
 
-    if (!file)
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    if (!file) return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
 
     // Save the file temporarily
     const bytes = await file.arrayBuffer();
@@ -21,47 +23,43 @@ export async function POST(req) {
 
     await writeFile(filePath, buffer);
 
+    // Update progress
+    progress = 30;
+    statusText = "File uploaded successfully...";
+
     // Path for the processed output file
     const outputFilePath = path.join(uploadsDir, `processed_${file.name}`);
 
-    if (mode == "decoder") {
-      // Run the C++ program
-      await new Promise((resolve, reject) => {
-        const cppProcess = spawn("./public/DECODER", [
-          filePath,
-          outputFilePath,
-        ]);
+    // Determine the C++ executable
+    const processType = mode === "decoder" ? "DECODER" : "ENCODER";
 
-        cppProcess.on("close", (code) => {
-          if (code === 0) resolve();
-          else reject(new Error("C++ program failed"));
-        });
-      });
+    // Start processing
+    progress = 60;
+    statusText = "Processing file...";
 
-      const newFilename = file.name.replace(/\.huf$/, ".txt");
-      return NextResponse.json({
-        message: "File Decoded successfully!",
-        downloadUrl: `/uploads/${newFilename}`,
-      });
-    }
+    const cppProcess = spawn(`./public/${processType}`, [filePath, outputFilePath]);
 
-    // Run the C++ program
-    await new Promise((resolve, reject) => {
-      const cppProcess = spawn("./public/ENCODER", [filePath, outputFilePath]);
+    cppProcess.on("close", (code) => {
+      if (code === 0) {
+        progress = 100;
+        statusText = "Processing completed!";
 
-      cppProcess.on("close", (code) => {
-        if (code === 0) resolve();
-        else reject(new Error("C++ program failed"));
-      });
+        const newFilename = mode === "decoder" ? file.name.replace(/\.huf$/, ".txt") : file.name.replace(/\.txt$/, ".huf");
+        downloadUrl = `/uploads/${newFilename}`;
+      } else {
+        progress = 0;
+        statusText = "Error processing file.";
+        downloadUrl = "";
+      }
     });
 
-    const newFilename = file.name.replace(/\.txt$/, ".huf");
-    // Return the processed file URL
-    return NextResponse.json({
-      message: "File processed successfully!",
-      downloadUrl: `/uploads/${newFilename}`,
-    });
+    return NextResponse.json({ message: "File upload started!" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+// Function to return progress
+export async function GET() {
+  return NextResponse.json({ progress, statusText, downloadUrl });
 }

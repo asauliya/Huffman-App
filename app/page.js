@@ -1,9 +1,9 @@
-import FileForm2 from "@/components/FileForm2";
+import FileForm from "@/components/FileForm";
 
 export default function Home() {
   return (
     <div>
-      <FileForm2/>
+      <FileForm/>
     </div>
   );
 }
